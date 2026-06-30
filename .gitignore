@@ -1,0 +1,8 @@
+build/
+prototype_out/
+*.exe
+*.jsonl
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+

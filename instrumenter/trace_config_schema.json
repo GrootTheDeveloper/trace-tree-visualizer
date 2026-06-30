@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["target_arrays", "operations"],
+  "properties": {
+    "target_arrays": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "structure_type"],
+        "properties": {
+          "name": { "type": "string" },
+          "structure_type": { "enum": ["fenwick", "segment_tree", "array"] },
+          "index_base": { "type": "integer", "default": 1 },
+          "size_variable": { "type": "string", "default": "n" }
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["function_name", "operation_type", "target_array"],
+        "properties": {
+          "function_name": { "type": "string" },
+          "operation_type": { "enum": ["update", "query", "build", "merge"] },
+          "target_array": { "type": "string" },
+          "params": { "type": "array", "items": { "type": "string" } },
+          "logical_size": { "type": "string" }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "stdin_file": { "type": "string" },
+        "args": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "timeout_seconds": { "type": "integer", "default": 10 },
+        "max_trace_events": { "type": "integer", "default": 100000 }
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "target_arrays": [
+    {
+      "name": "node",
+      "structure_type": "segment_tree",
+      "index_base": 1,
+      "size_variable": "n"
+    }
+  ],
+  "operations": [
+    {
+      "function_name": "update",
+      "operation_type": "update",
+      "target_array": "node",
+      "params": [
+        "index"
+      ],
+      "param_roles": {
+        "node": "idx",
+        "lo": "l",
+        "hi": "r",
+        "pos": "index"
+      },
+      "logical_size": "n"
+    },
+    {
+      "function_name": "get",
+      "operation_type": "query",
+      "target_array": "node",
+      "params": [
+        "u",
+        "v"
+      ],
+      "param_roles": {
+        "node": "idx",
+        "lo": "l",
+        "hi": "r",
+        "ql": "u",
+        "qr": "v"
+      },
+      "logical_size": "n"
+    }
+  ],
+  "tree_model": {
+    "node": {
+      "array": "node",
+      "kind": "segment_tree",
+      "root": 1,
+      "node_variable": "idx",
+      "child_expressions": [
+        "2*idx",
+        "2*idx+1"
+      ],
+      "parent_expression": "idx//2"
+    }
+  },
+  "tree_instances": [
+    {
+      "tree_id": "node",
+      "array": "node",
+      "kind": "segment_tree",
+      "base_array": "",
+      "node_fields": [],
+      "index_base": 1
+    }
+  ],
+  "watch_expressions": [
+    "idx",
+    "pos"
+  ],
+  "auto_watch_scalars": true,
+  "limits": {
+    "timeout_seconds": 5
+  },
+  "detected": {
+    "array": "node",
+    "arrays": [
+      "node"
+    ],
+    "structure_type": "segment_tree",
+    "size_variable": "n",
+    "node_variable": "idx",
+    "base_array": "",
+    "tree_instance_count": 1,
+    "operation_count": 2,
+    "role_inference": "ast",
+    "role_confidence": 1.0,
+    "role_errors": []
+  }
+}
