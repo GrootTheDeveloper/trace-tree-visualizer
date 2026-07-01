@@ -237,10 +237,20 @@ function numericIndex(cell) {
   return Number.isFinite(value) ? value : 0;
 }
 
-function coverageForCell(cell, coverByCell) {
+function coverageForCell(cell, coverByCell, treeEdges = []) {
   const cover = coverByCell.get(cell.id);
   if (cover?.left !== undefined && cover?.right !== undefined) {
     return { left: Number(cover.left), right: Number(cover.right) };
+  }
+  let currentId = cell.id;
+  while (true) {
+    const parentEdge = treeEdges.find(e => e.target === currentId);
+    if (!parentEdge) break;
+    currentId = parentEdge.source;
+    const pCover = coverByCell.get(currentId);
+    if (pCover?.left !== undefined && pCover?.right !== undefined) {
+      return { left: Number(pCover.left), right: Number(pCover.right) };
+    }
   }
   const index = numericIndex(cell);
   return { left: index, right: index };
@@ -841,7 +851,7 @@ function renderTree(analysis) {
     treeEdges = derivedCoverageEdges(cells, coverByCell);
   }
 
-  const covers = cells.map((cell) => coverageForCell(cell, coverByCell));
+  const covers = cells.map((cell) => coverageForCell(cell, coverByCell, treeEdges));
   const minLeft = Math.min(...covers.map((cover) => cover.left));
   const maxRight = Math.max(...covers.map((cover) => cover.right));
   const depthById = treeDepths(cells, treeEdges);
@@ -859,7 +869,7 @@ function renderTree(analysis) {
 
   const position = new Map();
   for (const cell of cells) {
-    const cover = coverageForCell(cell, coverByCell);
+    const cover = coverageForCell(cell, coverByCell, treeEdges);
     const center = (cover.left + cover.right) / 2;
     const depth = depthById.get(cell.id) || 0;
     position.set(cell.id, {
