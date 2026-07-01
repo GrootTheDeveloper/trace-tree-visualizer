@@ -352,7 +352,42 @@ function renderTimelineTree(analysis, svg) {
 
   // Calculate static layout dimensions using all nodes and edges
   const depthById = timelineDepths(nodes, edges);
-  
+  const isSegmentTimeline = nodes.some((node) => node.kind === "segment_tree");
+
+  if (isSegmentTimeline) {
+    const rootNode = nodes.find((n) => n.index === 1) || nodes[0];
+    if (rootNode && rootNode.range) {
+      const childMap = new Map();
+      edges.forEach((edge) => {
+        if (edge.kind === "tree_link") {
+          if (!childMap.has(edge.source)) childMap.set(edge.source, []);
+          childMap.get(edge.source).push(edge.target);
+        }
+      });
+      for (const children of childMap.values()) {
+        children.sort((a, b) => {
+          const na = nodes.find((n) => n.id === a);
+          const nb = nodes.find((n) => n.id === b);
+          return (na?.index || 0) - (nb?.index || 0);
+        });
+      }
+      const q = [{ id: rootNode.id, range: rootNode.range }];
+      while (q.length > 0) {
+        const { id, range } = q.shift();
+        const node = nodes.find((n) => n.id === id);
+        if (node && range) {
+          node.range = range;
+          const children = childMap.get(id) || [];
+          if (children.length >= 2) {
+            const mid = Math.floor((range[0] + range[1]) / 2);
+            q.push({ id: children[0], range: [range[0], mid] });
+            q.push({ id: children[1], range: [mid + 1, range[1]] });
+          }
+        }
+      }
+    }
+  }
+
   // Fix ghost node ranges (nodes generated out of bounds) dynamically
   const rangeById = new Map();
   for (const node of nodes) {
@@ -377,7 +412,6 @@ function renderTimelineTree(analysis, svg) {
   const minLeft = Math.min(...ranges.map((range) => Number(range[0])));
   const maxRight = Math.max(...ranges.map((range) => Number(range[1])));
   const maxDepth = Math.max(...depthById.values());
-  const isSegmentTimeline = nodes.some((node) => node.kind === "segment_tree");
   const treeArray = activeTreeArray || nodes.find((node) => node.kind === "segment_tree")?.array || "";
   const baseInfo = (timeline.base_arrays || []).find((item) => item.source_tree === treeArray) || null;
   const baseArrayName = baseInfo?.array || "";
