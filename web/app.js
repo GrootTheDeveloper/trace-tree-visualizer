@@ -352,7 +352,28 @@ function renderTimelineTree(analysis, svg) {
 
   // Calculate static layout dimensions using all nodes and edges
   const depthById = timelineDepths(nodes, edges);
-  const ranges = nodes.map((node) => node.range || [node.index, node.index]);
+  
+  // Fix ghost node ranges (nodes generated out of bounds) dynamically
+  const rangeById = new Map();
+  for (const node of nodes) {
+    rangeById.set(node.id, node.range ? [...node.range] : [node.index, node.index]);
+  }
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const edge of edges) {
+      const pRange = rangeById.get(edge.source);
+      const cRange = rangeById.get(edge.target);
+      if (pRange && cRange && Number(pRange[0]) === Number(pRange[1])) {
+        if (Number(cRange[0]) !== Number(pRange[0]) || Number(cRange[1]) !== Number(pRange[1])) {
+          rangeById.set(edge.target, [...pRange]);
+          changed = true;
+        }
+      }
+    }
+  }
+
+  const ranges = nodes.map((node) => rangeById.get(node.id));
   const minLeft = Math.min(...ranges.map((range) => Number(range[0])));
   const maxRight = Math.max(...ranges.map((range) => Number(range[1])));
   const maxDepth = Math.max(...depthById.values());
@@ -380,7 +401,7 @@ function renderTimelineTree(analysis, svg) {
 
   const position = new Map();
   for (const node of nodes) {
-    const range = node.range || [node.index, node.index];
+    const range = rangeById.get(node.id);
     const left = Number(range[0]);
     const right = Number(range[1]);
     const center = (Number(range[0]) + Number(range[1])) / 2;
